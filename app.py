@@ -1,6 +1,6 @@
 import pickle
 import numpy as np
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 import os
 
@@ -14,15 +14,17 @@ if not os.path.exists(MODEL_FILE):
 with open(MODEL_FILE, 'rb') as f:
     clf = pickle.load(f)
 
-# Classes from your training script (ensure this matches the order used during training)
-CLASSES = clf.classes_ # Directly pull classes from the loaded sklearn object
-
+CLASSES = clf.classes_
 app = Flask(__name__)
-# Enable CORS for the frontend (index.html) running in the browser to talk to this server
 CORS(app) 
 
-# --- 3. API ENDPOINT ---
+# --- 3. NEW: ADD ROUTE FOR THE FRONTEND ---
+@app.route('/')
+def serve_index():
+    """Serves the index.html file from the same directory."""
+    return send_from_directory('.', 'index.html')
 
+# --- 4. API ENDPOINT (No changes here) ---
 @app.route('/predict', methods=['POST'])
 def predict():
     """
@@ -33,10 +35,7 @@ def predict():
         data = request.json
         features = np.array(data['features'], dtype=np.float32).reshape(1, -1)
         
-        # 1. Get class probabilities for confidence calculation
         probas = clf.predict_proba(features)[0]
-        
-        # 2. Get the final predicted class index and value
         pred_index = np.argmax(probas)
         prediction = CLASSES[pred_index]
         confidence = probas[pred_index]
@@ -51,5 +50,3 @@ def predict():
         print(f"Prediction Error: {e}")
         return jsonify({'error': str(e), 'success': False}), 500
 
-# We don't use app.run() here because Render uses gunicorn (Start Command)
-# But we keep this structure for completeness.
