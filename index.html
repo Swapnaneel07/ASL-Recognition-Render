@@ -58,8 +58,8 @@
 
     <!-- Main Application Logic -->
     <script type="module">
-        // --- FIX: Corrected the import path to the stable CDN endpoint ---
-        import { HandLandmarker, FilesetResolver, DrawingUtils } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision/vision_bundle.js";
+        // --- FIX: Corrected the import path to the @latest stable CDN endpoint ---
+        import { HandLandmarker, FilesetResolver, DrawingUtils } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/vision_bundle.js";
 
         // --- DOM Elements ---
         const video = document.getElementById("webcam");
@@ -75,7 +75,7 @@
         const stopBtn = document.getElementById("stop-btn");
 
         // --- Globals ---
-        const FLASK_SERVER_URL = "https://asl-keypoint-api.onrender.com/predict";
+        const FLASK_SERVER_URL = "http://127.0.0.1:5000/predict";
         let handLandmarker;
         let predictionBuffer = [];
         const SMOOTHING_BUFFER_SIZE = 10;
@@ -165,7 +165,7 @@
                             });
                             if (response.ok) {
                                 const res = await response.json();
-                                confidence = res.confidence;
+                                confidence = res.confidence / 100.0; // Convert from 99.0 to 0.99 for bar
                                 smoothedPrediction = applySmoothing(res.prediction);
                             } else {
                                smoothedPrediction = applySmoothing(null); 
@@ -256,7 +256,8 @@
             // 2. Create Hand Landmarker
             try {
                 const vision = await FilesetResolver.forVisionTasks(
-                    "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm"
+                    // --- FIX: Point to the @latest WASM files ---
+                    "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm"
                 );
                 handLandmarker = await HandLandmarker.createFromOptions(vision, {
                     baseOptions: {
