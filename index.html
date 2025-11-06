@@ -241,7 +241,7 @@
             // 1. Check if Python server is running
             try {
                 // --- FIX: Ping the root URL, not the /predict endpoint ---
-                await fetch("http://127.0.0.1:5000/"); 
+                await fetch("https://asl-keypoint-api.onrender.com/"); 
                 serverStatus.textContent = "Server Connected!";
                 serverStatus.classList.remove("text-yellow-400");
                 serverStatus.classList.add("text-green-400");
